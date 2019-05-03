@@ -1,4 +1,4 @@
-### 第6章 存储器层次架构
+# 第6章 存储器层次架构
 > 存储技术：
   - DRAM和SRAM(断电丢失，Main Memory用的是DRAM)、ROM（断电不丢失，flash memory基于EEPROM，用于手机、SSD硬盘等）
   - 磁盘存储
@@ -48,7 +48,48 @@
         sum += a[i][j];
     ```
 > Memory mountain
-### 第7章 链接
-### 第8章 异常控制流
-### 第9章 虚拟内存
-### 第10章 系统级I/O
+# 第7章 链接
+> Compiler Driver
+  - Source files:
+    - *.c (ASCII source file)
+  - Translators:
+    - cpp(C preprocessor) -> *.i (ASCII intermediate file)
+    - ccl(C compiler) -> *.s (ASCII assembly-language file)
+    - as(assembler) -> *.o (relocatable object file)
+  - Linker:
+    - ld(linker program) -> *.elf (executable object file)
+> Static Linking
+  - Symbol resolution
+  - Relocation
+> Object File
+  - Relocatable object file
+    - Windows -> *.obj
+    - Linux -> *.o
+  - Executable object file
+    - Windows -> *.exe
+    - Linux -> /bin/bash
+  - Shared object file 
+    - Windows -> *.dll
+    - Linux -> *.so
+  - Format (COFF)
+    - Windows -> Portable Executable(PE)
+    - MacOS-X -> Mach-O
+    - x86-64 Linux & Unix -> Executable and Linkable Format(ELF)
+  - Relocatable Object Files
+    - ELF header:
+      1. 生成该文件的系统的字的大小和字节顺序
+      2. ELF header的大小
+      3. 目标文件的类型（relocatable， executable or shared）
+      4. 机器类型（e.g. x86-64)
+      5. section header table的文件偏移，以及其中entry的大小和数量
+    - .text:
+      - 已编译的机器代码
+    - .rodata:
+      - 只读数据
+      
+    - Section header table:
+      - 描述了不同section的位置和大小
+      - 每个section有固定大小的entry
+# 第8章 异常控制流
+# 第9章 虚拟内存
+# 第10章 系统级I/O
