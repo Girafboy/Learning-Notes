@@ -135,6 +135,21 @@
     - Section header table:
       - 描述了不同section的位置和大小
       - 每个section有固定大小的entry
+  - Relocation:
+    - Entries:(.rel.text & .rel.data)
+      - offset: 要被修改的重定位处的节偏移
+      - type:
+        - R_X86_64_PC32: PC相对地址，PC指向下一条指令
+        - R_X86_64_32： 绝对寻址
+      - symbol: 某全局变量或者函数
+      - addend: 偏移调整
+    - 算法：
+      - 首先： refptr = s + r.offset（要被修改的重定位位置）
+      - PC相对引用：
+        1. refaddr = ADDR(s) + r.offset（要被修改的地方的运行时地址 = 当前section的运行时地址 + 偏移量）
+        2. *refptr = (unsigned)(ADDR(r.symbol) + r.addend - refaddr)（把要被修改的地方的值改为运行时相对地址）
+      - 绝对引用：
+        1. *refptr = (unsigned)(ADDR(r.symbol) + r.addend - refaddr) （把要被修改的地方的值改为绝对地址）
 # 第8章 异常控制流
 # 第9章 虚拟内存
 # 第10章 系统级I/O
