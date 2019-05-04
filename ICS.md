@@ -82,11 +82,11 @@
       3. 目标文件的类型（relocatable， executable or shared）
       4. 机器类型（e.g. x86-64)
       5. section header table的文件偏移，以及其中entry的大小和数量
-    - .text:
+    - .text:(Ndx=1)
       - 已编译的机器代码
     - .rodata:
       - 只读数据
-    - .data:
+    - .data:(Ndx=3)
       - 已初始化的全局和静态变量
     - .bss:（Better save space）
       - 未初始化的全局和静态变量
@@ -103,11 +103,20 @@
         - type: Function or Data
         - binding: Local or Global
         - value: Section offset or absolute address
-        - section: 
+        - section: <=> Ndx
           - pseudosection:（仅出现在可重定位目标文件）
             - ABS: 不该被重定位的符号
             - UNDEF： 未定义符号
-            - COMMON： 未被分配位置的位处话数据目标（未初始化的全局变量）
+            - COMMON： 未被分配位置的未初始化数据（未初始化的全局变量，其他是.bss），也即弱全局符号
+      - Resolution:
+        - Rules:（Linux链接器）
+          1. 不允许多个同名的强符号
+          2. 强符号和弱符号同名，选择强符号
+          3. 多个弱符号同名，任意选择一个
+        - static library:
+          - Linux中archive
+          - E-可重定位目标文件集合，U-未解析符号集合，D-已定义符号集合
+          - *.a位置很重要
     - .rel.text：
       - .text节中的位置列表，链接时修改位置
       - 任何调用外部函数或者引用全局变量的指令
