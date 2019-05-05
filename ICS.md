@@ -151,7 +151,14 @@
         2. *refptr = (unsigned)(ADDR(r.symbol) + r.addend - refaddr)（把要被修改的地方的值改为运行时相对地址）
       - 绝对引用：
         1. *refptr = (unsigned)(ADDR(r.symbol) + r.addend - refaddr) （把要被修改的地方的值改为绝对地址）
-    - 
+  - Executable Object Files
+    - 文件格式：
+      1. ELF头还包括了程序入口点（entry point）
+      2. .text,.rodata和.data与可重定位目标文件相似
+      3. .init定义了函数_init，程序初始化代码调用
+      4. 不再需要.rel节
+    - 对齐要求：vaddr mod align = off mod align（起始地址和节偏移量对齐）
+    - 加载
 # 第8章 异常控制流
 # 第9章 虚拟内存
 # 第10章 系统级I/O
