@@ -262,6 +262,68 @@
     1. User Mode & Kernel Mode
     2. Context Switches
   - Process Control:
+    1. 获取进程ID
+    ```
+    #include <sys/types.h> //定义了pid_t为int
+    #include <unistd.h>
+    
+    pid_t getpid(void);//返回当前进程PID
+    pid_t getppid(void);//返回父进程PID
+    ```
+    2. 创建和终止进程
+    ```
+    #include <stdlib.h>
+    void exit(int status);//不返回，有退出状态
+    ```
+    ```
+    #include <sys/types.h>
+    #include <unistd.h>
+    //调用一次，返回两次；子进程返回0，父进程返回子进程的PID，出错返回-1
+    //并发执行，相同但独立的地址空间，共享文件
+    pid_t fork(void);
+    ```
+    3. 回收子进程
+    ```
+    #include <sys/types.h>
+    #include <sys/wait.h>
+    
+    //pid>0 => 等待这一个子进程
+    //pid=-1 => 等待所有子进程
+    
+    //默认options=0,等待一个子进程终止就返回，返回已终止子进程的PID
+    //options=WNOHANG => 没有可回收子进程就立即返回
+    //options=WUNTRACED => 等待一个terminated or stopped子进程
+    //options=WCONTINUED => 等待一个terminated子进程 or SIGCONT继续一个stopped子进程
+    
+    //WIFEXITED(status) => exit或者return正常终止，则返回true
+      //WEXITSTATUS(status) => 返回退出状态
+    //WIFSIGNALED(status) => 因未捕获的信号终止，则返回true
+      //WTERMSIG(status) => 返回导致终止的信号编号
+    //WIFSTOPPED(status) => 子进程当前是STOPPED，则返回true
+      //WSTOPSIG(status) => 返回引起停止的信号编号
+    //WIFCONTINUED(status) => 子进程收到SIGCONT重新启动，则返回真
+    
+    //没有子进程，则返回-1，设置errno为ECHILD
+    //被信号中断，则返回-1，设置errno为EINTR
+    pid_t waitpid(pid_t pid, int *statusp, int options)
+    
+    //wait(&status)等价于waitpid(-1, &status, 0)
+    pid_t wait(int *statusp);
+    ```
+    4. 让进程休眠
+    ```
+    #include <unistd.h>
+    //时间到返回0，否则返回剩下的秒数
+    unsigned int sleep(unsigned int secs);
+    //休眠直到收到信号，总是返回-1
+    int pause(void);
+    ```
+    5. 加载并运行程序
+    ```
+    #include <unistd.h>
+    //成功不返回，错误返回-1
+    int execve(const char *filename, const char *argv[], const char *envp[]);
+    ```
 > 
 # 第9章 虚拟内存
 # 第10章 系统级I/O
