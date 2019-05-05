@@ -159,6 +159,26 @@
       4. 不再需要.rel节
     - 对齐要求：vaddr mod align = off mod align（起始地址和节偏移量对齐）
     - 加载
+  - 动态链接共享库
+    - 目标： 解决static library的缺陷（显式更新，浪费内存）
+    - Linux系统接口：
+    ```
+    #include <dlfcn.h>
+    
+    //成功返回指向句柄的指针，出错返回NULL
+    //filename: ./*.so
+    //flag: RTLD_NOW(立即解析对外部符号的引用)，RTLD_LAZY(推迟符号解析直到执行来自库中的代码)
+    void *dlopen(const char *filename, int flag);
+    
+    //成功返回指向符号的指针，出错返回NULL
+    void *dlsym(void *handle, char *symbol);
+    
+    //成功返回0，出错返回-1
+    int dlclose(void *handle);
+    
+    //对前面三者调用失败返回错误消息，调用成功返回NULL
+    const char *dlerror(void);
+    ```
 # 第8章 异常控制流
 # 第9章 虚拟内存
 # 第10章 系统级I/O
