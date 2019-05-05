@@ -200,5 +200,68 @@
     - READELF：显示一个目标文件的完整结构（包含SIZE和NM）
     - OBJDUMP：所有二进制工具之母。反汇编.text
 # 第8章 异常控制流
+> 通俗的理解：
+  - ECF（Exceptional Control Flow）就是在正常指令进行（控制流control flow)的过程中应对突发变化做出的反应。
+> Exceptions：
+  - Instruction curr --Exception--> Exception processing --> I curr / I next / Abort
+  - Type:  
+  
+    类别|原因|异步同步|返回行为
+    :--:|:--|:--:|:--
+    Interrupt|来自IO设备的信号|Async|返回到下一条指令
+    Trap|有意的异常|Sync|返回到下一条指令
+    Fault|潜在可恢复的错误|Sync|可能返回到当前指令
+    Abort|不可恢复的错误|Sync|不返回
+    
+    - Interrupt: 网络适配器、磁盘控制器、定时器芯片等，中断引脚触发中断
+    - Trap：syscall(read,fork,execve,exit,etc.)  
+      %rax包含系统调用号  
+      参数寄存器传递，而非栈传递，最多6个  
+      返回时%rcx,%r11被破坏，%rax包含返回值，负数返回值对应errno  
+      > System Call Error Handling
+      error-handling wrappers:  
+      ```
+      void unix_error(char *msg)
+      {
+        fprintf(stderr, "%s: %s\n", msg, strerror(errno);
+        exit(0);
+      }
+      
+      pid_t Fork(void)
+      {
+        pid_t pid;
+        
+        if((pid = fork()) < 0)
+          unix_error("Fork error");
+        return pid;
+      }
+      ```
+      ```
+      pid = Fork();
+      ```
+    - Fault: 缺页异常（page fault exception）
+    - Abort: DRAM或SRAM位损坏时发生奇偶校验错误
+  - 常见异常：
+  
+    Exception number | Description | Exception Class
+    :--: | :-- | :--
+    0 | 除法错误（通常选择终止程序） | Fault
+    13 | 一般保护故障（Segmentation Fault） | Fault
+    14 | 缺页 | Fault
+    18 | Machine check（机器故障）| Abort
+    32-255 | 操作系统定义的异常 | Interrupt or Trap
+    
+> Processes
+  - 两个关键抽象：
+    1. 一个独立的逻辑控制流
+    2. 一个私有的地址空间
+  - 区分两个概念：
+    1. 并发(concurrency)：time slice有交叉
+    2. 并行(parallel)：多核处理和多机协同
+  - 理解：
+    1. User Mode & Kernel Mode
+    2. Context Switches
+  - Process Control:
+> 
 # 第9章 虚拟内存
 # 第10章 系统级I/O
