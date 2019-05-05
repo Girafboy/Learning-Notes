@@ -62,15 +62,16 @@
   - Symbol resolution
   - Relocation
 > Object File
-  - Relocatable object file
-    - Windows -> *.obj
-    - Linux -> *.o
-  - Executable object file
-    - Windows -> *.exe
-    - Linux -> /bin/bash
-  - Shared object file 
-    - Windows -> *.dll
-    - Linux -> *.so
+  - 分类：
+    - Relocatable object file
+      - Windows -> *.obj
+      - Linux -> *.o
+    - Executable object file
+      - Windows -> *.exe
+      - Linux -> /bin/bash
+    - Shared object file 
+      - Windows -> *.dll
+      - Linux -> *.so
   - Format (COFF)
     - Windows -> Portable Executable(PE)
     - MacOS-X -> Mach-O
@@ -150,6 +151,7 @@
         2. *refptr = (unsigned)(ADDR(r.symbol) + r.addend - refaddr)（把要被修改的地方的值改为运行时相对地址）
       - 绝对引用：
         1. *refptr = (unsigned)(ADDR(r.symbol) + r.addend - refaddr) （把要被修改的地方的值改为绝对地址）
+    - 
 # 第8章 异常控制流
 # 第9章 虚拟内存
 # 第10章 系统级I/O
