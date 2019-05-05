@@ -159,7 +159,7 @@
       4. 不再需要.rel节
     - 对齐要求：vaddr mod align = off mod align（起始地址和节偏移量对齐）
     - 加载
-  - 动态链接共享库
+  - Dynamic Linking with Shared Libraries
     - 目标： 解决static library的缺陷（显式更新，浪费内存）
     - Linux系统接口：
     ```
@@ -179,6 +179,26 @@
     //对前面三者调用失败返回错误消息，调用成功返回NULL
     const char *dlerror(void);
     ```
+    - 技术实现——PIC(Position-Independent Code)
+      - GOT(Global Offset Table):数据段
+        - 8 bytes per entry
+        - GOT[0] GOT[1] 解析函数地址使用
+        - GOT[2] ld-linux.so的入口点
+        - GOT[3] 系统start up
+        - 从GOT[4]开始指向PLT entry第二条指令或运行时地址
+      - PLT(Procedure Linkage Tabl代码段
+        - 16 bytes per entry
+        - PLT[0] 跳转到dynamic linker
+        - PLT[1] 调用系统启动函数__libc_start_main
+        - 从PLT[2]开始调用用户代码函数
+  - Tools:
+    - AR: 静态库
+    - STRINGS：列出一个目标文件中所有可打印字符串
+    - STRIP：从目标文件删除符号表信息
+    - NM：列出一个目标文件的符号表中定义的符号
+    - SIZE：列出目标文件中节的名字和大小
+    - READELF：显示一个目标文件的完整结构（包含SIZE和NM）
+    - OBJDUMP：所有二进制工具之母。反汇编.text
 # 第8章 异常控制流
 # 第9章 虚拟内存
 # 第10章 系统级I/O
