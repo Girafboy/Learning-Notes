@@ -457,5 +457,22 @@
     //若信号行为运行处理程序，从处理程序返回，恢复调用原有的阻塞集合
     int sigsuspend(const sigset_t *mask);
     ```
+> Nonlocal Jumps
+  ```
+  #include <setjmp.h>
+  
+  //自己调用返回0，longjump调用返回非零
+  int setjmp(jmp_buf env);
+  //sig-是可以被信号处理程序使用的版本，savesigs表明是否保存信号到上下文
+  int sigsetjmp(sigjmp_buf env, int savesigs);
+  
+  //retval设置了到setjmp的返回值
+  void longjmp(jmp_buf env, int retval);
+  void siglongjmp(sigjmp_buf env, int retval);
+  ```
+> Tools:
+  - STRACE: 打印一个正在运行的程序和它的子进程调用的每个系统调用的轨迹。
+  - PS： 列出系统中的进程
+  - /proc： 一个虚拟文件系统
 # 第9章 虚拟内存
 # 第10章 系统级I/O
