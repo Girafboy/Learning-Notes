@@ -474,5 +474,36 @@
   - STRACE: 打印一个正在运行的程序和它的子进程调用的每个系统调用的轨迹。
   - PS： 列出系统中的进程
   - /proc： 一个虚拟文件系统
-# 第9章 虚拟内存
 # 第10章 系统级I/O
+> Unix I/O
+  - 将所有的I/O设备（例如网络、磁盘和终端）都优雅地映射为文件。
+  - 打开文件使用一个descriptor标识
+  - 每个进程创建开始都有三个打开的文件：standard input(descriptor 0 or STDIN_FILENO), standard output(descriptor 1 or STDOUT_FILENO), standard error(descriptor 2 or STDERR_FILENO)
+  - 文件位置file position可以通过seek操作，初试为0
+  - 读文件即从文件复制n(n>0)字节到内存,file position响应从k变为k+n,当k大于等于文件字节总数时触发EOF（end-of-file）条件。**文件结尾处并没有EOF符号**  
+    写操作就是从内存复制n(n>0)字节到文件，从当前file position开始，然后更新file position
+  - 关闭文件后释放descriptor
+> Files
+  - regular file: 包含任意数据。
+    - text file 只包含ASCII或Unicode的普通文件
+    - binary file 所有其他文件
+  - directory： 包含一组链接（link）的文件，每个链接将filename映射到一个文件（包括目录）
+  - socket： 用来与另一个进程进行跨网通信的文件
+> 文件操作：
+  - ```
+    #include <sys/types.h>
+    #include <sys/stat.h>
+    #include <fcntl.h>
+    
+    //成功返回new file descriptor, 出错返回-1
+    //flags：O_RDONLY,OWRONLY,O_RDWR,O_CREAT(不存在则新建),O_TRUNC(已存在则截断),O_APPEND
+    //访问权限mode & ~umask   umask(some_mode);
+    //9种权限：S_IR(W or X)USR(GRP or OTH)  
+              读/写/执行 * 拥有者/所在组成员/其他任何人
+    int open(char *filename, int flags, mode_t mode);
+    ```
+    ```
+    #include <unistd.h>
+    //成功返回0，出错返回-1
+    int close(int fd);
+    ```
