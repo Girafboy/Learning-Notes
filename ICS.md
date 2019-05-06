@@ -411,9 +411,9 @@
       异步信号不安全的|异步信号安全的
       :--:|:--:
       printf sprintf|write sio_putl sio_puts sio_error
-      malloc|
+      malloc|--
       exit|_exit
-       |fork execve waitpid signal
+      --|fork execve waitpid signal
        
       3. G2.保存和恢复errno（处理程序要返回时才有必要，_exit终止就不需要了）
       4. G3.阻塞所有的信号，保护对共享全局数据结构的访问（也即保证事务的原子性）
