@@ -330,13 +330,132 @@
     #include <stdlib.h>
 
     //在环境变量数组中搜索“name=value”，若存在则返回指向value的指针，否则返回NULL
-    char *getenv(const char *name)；
+    char *getenv(const char *name);
     //成功返回0，失败返回-1.
     //若存在且overwrite非零则覆盖重写，不存在则添加
     int setenv(const char *name, const char *newvalue, int overwrite);
     //不返回，删除对应字符串
     void unsetenv(const char *name);
     ```
-> 
+> Signals
+  - Sending Signals
+    - 一个进程可以发送信号给自己
+    - process group:
+    ```
+    #include <unistd.h>
+    //返回调用进程的进程组ID
+    pid_t getpgrp(void);
+    //将进程pid的进程组改为pgid
+    //pid=0 => 使用当前进程pid
+    //pgid=0 => 使用pid作为进程组ID
+    //成功返回0，失败返回-1
+    int setpgid(pid_t pid, pid_t pgid);
+    ```
+    - 使用程序  
+    `linux> /bin/kill -9 15213 //发给进程`
+    `linux> /bin/kill -9 -15213 //发给进程组的每个进程`
+    - 键盘发送
+      - Ctrl+C 发送SIGINT到前台进程组的每个进程，终止作业
+      - Ctrl+Z 发送SIGTSTP到前台进程组的每个进程，停止（挂起suspend）作业
+    - kill函数
+    ```
+    #include <sys/types.h>
+    #include <signal.h>
+    //pid=0 => 发送给调用进程所在进程组的每个进程，包括自己
+    //pid<0 => 发送给进程组中每个进程
+    //pid>0 => 发送给某个进程
+    //成功返回0，错误返回-1
+    int kill(pid_t pid, int sig);
+    ```
+    - alarm函数
+    ```
+    #include <unistd.h>
+    //向自己发送SIGALRM信号
+    //返回前一次闹钟剩余的秒数，若以前没有设定闹钟就返回0
+    //secs=0 => 不安排新的闹钟
+    //任何调用都将取消待处理（pending）的闹钟
+    unsigned int alarm(unsigned int secs);
+    ```
+  - Receiving Signals
+  ```
+  #include <signal.h>
+  typedef void (*sighandler_t)(int);
+  //可以修改信号相关联的默认行为，SIGSTOP和SIGKILL不可修改
+  //handler=SIG_IGN => 忽略signum的信号
+  //handler=SIG_DFL => 恢复signum的默认行为
+  
+  sighandler_t signal(int signum, sighandler_t handler);
+  ```
+  - Blocking and Unblocking Signals
+  ```
+  #include <signal.h>
+  //how=SIG_BLOCK => blocked=blocked | set
+  //how=SIG_UNBLOCK => blocked=blocked & ~set
+  //how=SIG_SETMASK => block=set
+  //oldset非空 => blocked位向量之前的值保存在oldset中
+  //成功返回0，出错返回-1
+  int sigprocmask(int how, const sigset_t *set, sigset_t *oldset);
+  int sigemptyset(sigset_t *set);
+  int sigfillset(sigset_t *set);
+  int sigaddset(sigset_t *set, int signum);
+  int sigdelset(sigset_t *set, int signum);
+  
+  //signum是set的成员返回1，不是返回0，出错返回-1
+  int sigismember(const sigset_t *set, int signum);
+  ```
+  - Signal Handlers
+    - Safe：
+      1. G0.处理程序要尽可能简单
+      2. G1.在处理程序中只调用异步信号安全（async-signal-safe）的函数
+      
+      异步信号不安全的|异步信号安全的
+      :--:|:--:
+      printf sprintf|write sio_putl sio_puts sio_error
+      malloc|
+      exit|_exit
+       |fork execve waitpid signal
+       
+      3. G2.保存和恢复errno（处理程序要返回时才有必要，_exit终止就不需要了）
+      4. G3.阻塞所有的信号，保护对共享全局数据结构的访问（也即保证事务的原子性）
+      5. G4.用volatile声明全局变量（也即保证数据的一致性，不要缓存，必须每次从内存读取）
+      6. G5.用sig_atomic_t声明flags
+      `volatile sig_atomic_t flag;`
+    - Correct:
+      1. 信号不会排队等待，信号block后，后来的pending信号被简单丢弃
+    - Portable：
+      1. signal的函数语义各有不同
+      2. 系统调用可以被中断  
+      解决方案：Posix标准
+      ```
+      #include <signal.h>
+      
+      //成功返回0，出错返回-1
+      int sigaction(int signum, struct sigaction *act, struct sigaction *oldact);
+      ```
+  - Concurrency Bugs：
+    - race: 并发交错使得有时先delete后add，有时先add后delete
+    - 运用显式block达到Synchronizing Flows来避免这种问题
+  - Explicitly Waiting:
+    1. Wasteful
+    `while(!pid);`
+    2. Race
+    ```
+    while(!pid)
+      pause();
+    ```
+    3. Too slow
+    ```
+    while(!pid)
+      sleep(1);
+    ```
+    4. Proper
+    ```
+    #include <signal.h>
+    //返回-1
+    //暂时用mask替换当前阻塞集合，然后挂起该进程，直到收到一个信号。
+    //若信号行为终止，不返回就直接终止
+    //若信号行为运行处理程序，从处理程序返回，恢复调用原有的阻塞集合
+    int sigsuspend(const sigset_t *mask);
+    ```
 # 第9章 虚拟内存
 # 第10章 系统级I/O
