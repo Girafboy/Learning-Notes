@@ -322,7 +322,20 @@
     ```
     #include <unistd.h>
     //成功不返回，错误返回-1
+    //argv和envp都是以null结尾的指针数组，其中每个指针指向栈中的一个命令行/环境变量字符串
+    //全局变量environ指向envp[0]
     int execve(const char *filename, const char *argv[], const char *envp[]);
+    ```
+    ```
+    #include <stdlib.h>
+
+    //在环境变量数组中搜索“name=value”，若存在则返回指向value的指针，否则返回NULL
+    char *getenv(const char *name)；
+    //成功返回0，失败返回-1.
+    //若存在且overwrite非零则覆盖重写，不存在则添加
+    int setenv(const char *name, const char *newvalue, int overwrite);
+    //不返回，删除对应字符串
+    void unsetenv(const char *name);
     ```
 > 
 # 第9章 虚拟内存
