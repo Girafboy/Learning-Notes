@@ -16,10 +16,38 @@
   - internet(interconnected network)：多个不兼容的LAN&WAN用router(路由器)连接起来形成
   - Protocol(协议)：解决了不兼容局域网间传送数据的问题
     1. HostA 上的client调用system call，把数据从virtual address复制到kernel buffer
-    2. HostA 上的protocol　software在数据前附加PH和FH1形成frame(PH寻址到Host B，FH1寻址到router)，然后传送frame到LAN1 adapter
+    2. HostA 上的protocol　software在数据前附加PH和FH1形成frame(PH<互联网络包头>寻址到Host B，FH1<LAN1的帧头>寻址到router)，然后传送frame到LAN1 adapter
     3. LAN1 adapter把frame复制到network
     4. Router's LAN1 adapter读取frame传给protocol software
     5. Router从PH提取出目标网络地址，把FH1换成FH2，把新的frame传给adapter
     6. Router's LAN2 adapter把frame复制到network
     7. HostB's adapter读取frame并传给protocol software
     8. HostB's protocol software剥落PH和FH2，最后把数据通过system call复制到virtual address
+> The Global IP Internet
+  - IP地址
+    - 地址结构(历史遗留问题)
+    ```
+    struct in_addr {
+        uint32_t s_addr;/*Address in network byte order(big-endian)*/
+    }
+    ```
+    - big-endian/little-endian转换
+    ```
+    #include <arpa/inet.h>
+
+    //返回网络字节顺序值
+    uint32_t htonl(uint32_t hostlong); 
+    uint16_t htons(uint16_t hostshort);
+
+    //返回主机字节顺序值
+    uint32_t ntohl(uint32_t netlong);
+    uint16_t ntohs(uint16_t netshort);
+    ```
+    - IP address/dotted-decimal string转换
+    ```
+    #include <arpa/inet.h>
+
+    int inet_pton(AF_INET, const char *src, void *dst);
+
+    const char *inet_ntop(AF_INET, const void *src, char *dst, socklen_t size);
+    ```
