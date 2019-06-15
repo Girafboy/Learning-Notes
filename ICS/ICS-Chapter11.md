@@ -107,7 +107,96 @@
 
     /*
      *成功返回0，出错返回-1
+     *与地址为addr的服务器建立连接，会阻塞，一旦成功clientfd就可以用于读写
      */
     int connect(int clientfd, const struct sockaddr *addr, socklen_t addrlen);
 
+    /*
+     *成功返回0，出错返回-1
+     *把addr和sockfd联系起来
+     */
     int bind(int sockfd, const struct sockaddr *addr, socklen_t addrlen);
+
+    /*
+     *成功返回0，出错返回-1
+     *把sockfd从active(主动)变成listening(监听)，backlog暗示了排队数量，一般取1024
+     */
+    int listen(int sockfd, int backlog);
+
+    /*
+     *成功返回非负connfd,出错返回-1
+     *listenfd存在于服务器整个生命周期，connfd每次接受连接请求创建一次
+    ing accept(int listenfd, struct sockaddr *addr, int *addrlen);
+    ```
+  
+  - Host & Service 转换
+    ```
+    #include <sys/types.h>
+    #include <sys/socket.h>
+    #include <netdb.h>
+
+    struct addrinfo{
+        int ai_flags;
+        int ai_family;
+        int ai_socktype;
+        int ai_protocol;
+        char *ai_canonname;
+        size_t ai_addrlen;
+        struct sockaddr *ai_addr;
+        struct addrinfo *ai_next;
+    }
+
+    /*
+     *成功返回0，错误返回错误代码
+     *将host(hostname/hostaddr),service(servname/port)字符串转化为sockaddr
+     *是reentrant(可重入的)
+     *返回result，result是指向addrinfo的链表，addrinfo包含指向sockaddr
+     *同时还会遍历result，依次尝试sockaddr，直到调用socket和connect/bind成功，fd会绑定到sockaddr
+     *freeaddrinfo用于释放result
+     *gai_strerror用于把返回的错误代码转化为字符串
+     *host和service至少指定一个
+     *可选参数hints只能设置ai_family, ai_socktype, ai_protocol和ai_flags 字段，其他必须为0/NULL（通常memset）
+     ***默认返回IPv4和IPv6，ai_family可以设置AF_INET(限制为IPv4) 和 AF_INET6(限制为IPv6)
+     ***对于host关联的每个地址，默认返回最多三个addrinfo(他们的ai_socktype不同：connections,datagrams,raw socket)，ai_socket设置为SOCK_STREAM将链表限制为每个地址最多一个addrinfo，该addrinfo可以作为连接的一个端点
+     ***ai_flags是bit amsk
+     *****AI_ADDRCONFIG：如果主机被配置为IPv4就只返回IPv4，IPv6也一样
+     *****AI_CANONNAME：默认为NULL。如果设置了，result中第一个addrinfo的ai_canonname指向host的canonical name
+     *****AI_NUMERiCSERV：强制参数service为port number
+     *****AI_PASSIVE：默认返回主动套接字。服务器监听时设置此位，同时host应为NULL，得到的sockaddr会是wildcard address(通配符地址)
+     */
+    int getaddrinfo(const char *host, const char *service, const struct addrinfo *hints, struct addrinfo **result);
+
+    void freeaddrinfo(struct addrinfo *result);
+
+    const char *gai_strerror(int errcode);
+
+    /*
+     *成功返回0，错误返回错误代码
+     *把sa转化为对应的host和service
+     *host和service必须设置其中之一，对应于hostlen/servlen设置为0
+     *flags是bit mask
+     ***NI_NUMERICHOST：默认返回host域名，设置此位返回数字地址字符串
+     ***NI_NUMERICSERV：默认检查/etc/services，尽量返回servname，设置此位会简单返回port number
+     */
+    int getnameinfo(const struct sockaddr *sa, socklen_t aslen, char *host, size_t hostlen,    char *service, size_t servlen,    int flags);
+    ```
+  
+  - 辅助函数
+    ```
+    #include "csapp.h"
+
+    /*
+     *建立与hostname上port端口的server的连接
+     *成功返回clientfd，出错返回-1
+     */
+    int open_clientfd(char *hostname, char *port);
+
+    /*
+     *服务器在port端口创建一个listenfd，准备接受连接请求
+     *成功返回listenfd，出错返回-1
+     */
+    int open_listenfd(char *port);
+    ```
+
+> Web Servers
+  - 
