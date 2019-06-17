@@ -1,5 +1,12 @@
-#DataBase
-###MainLine: Designment,Development,Management  
+<script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({ tex2jax: {inlineMath: [['$', '$']]}, messageStyle: "none" });
+</script>
+
+# DataBase
+
+### MainLine: Designment,Development,Management
+
 -------------
 1. Conception:
   - DataBase(数据库): A collection of data
@@ -143,18 +150,18 @@
       - DeadLock(死锁): 必须有一个事务先释放锁
     - Isolation Level
   
-        Isolation Level|写锁|读锁|Dirty read|non-repeatable read|phantom|Consistency|Concurrency
-        :-|:-:|:-:|:-:|:-:|:-:|:-:|:-:
-      1. Read uncommitted|行级排他锁，事务结束释放|不用锁|Y|Y|Y|Very Low|Very High
-      2. Read committed|行级排他锁，事务结束释放|行级共享锁|N|Y|Y|Low|High
-      3. Repeatable read|行级排他锁，事务结束释放|行级共享锁，事务结束释放|N|N|Y|High|Low
-      4. Serializable|表级排他锁，事务结束释放|表级共享锁，事务结束释放|N|N|N|Very High|Very Low
+        | Isolation Level     |           写锁           |           读锁           | Dirty read | non-repeatable read | phantom | Consistency | Concurrency |
+        | :------------------ | :----------------------: | :----------------------: | :--------: | :-----------------: | :-----: | :---------: | :---------: |
+        | 1. Read uncommitted | 行级排他锁，事务结束释放 |          不用锁          |     Y      |          Y          |    Y    |  Very Low   |  Very High  |
+        | 2. Read committed   | 行级排他锁，事务结束释放 |        行级共享锁        |     N      |          Y          |    Y    |     Low     |    High     |
+        | 3. Repeatable read  | 行级排他锁，事务结束释放 | 行级共享锁，事务结束释放 |     N      |          N          |    Y    |    High     |     Low     |
+        | 4. Serializable     | 表级排他锁，事务结束释放 | 表级共享锁，事务结束释放 |     N      |          N          |    N    |  Very High  |  Very Low   |
    
-        Problem|解释
-        -|-
-        Dirty Read|读到了别人未提交的数据
-        Non-repeatable Read|同一事务多次读取数据值不一致，是update引发的问题
-        Phantom|同一事务多次读取数据数量不一致，是insert和delete引发的问题
+        | Problem             | 解释                                                       |
+        | ------------------- | ---------------------------------------------------------- |
+        | Dirty Read          | 读到了别人未提交的数据                                     |
+        | Non-repeatable Read | 同一事务多次读取数据值不一致，是update引发的问题           |
+        | Phantom             | 同一事务多次读取数据数量不一致，是insert和delete引发的问题 |
 8. Recovery System
     - Failure：
       - Transaction failure
@@ -182,4 +189,33 @@
 10. Query Processing
     - Parsing and translation
     - Optimization
+      - Equivalence Rules: 尽可能先select再join
     - Evaluation
+      - Query Cost
+        - disk accesses
+          - Number of seeks($t_S$)
+          - Number of blocks read($t_T$)
+          - Number of blocks written($t_T$)
+        - CPU(ignore)
+      - File scan
+        - Algorithm A1(linear search)
+        $$cost=b_r block transfers+1 seek$$
+        - A1(linear search, equality on key)
+        $$cost=(b_r/2)*t_T+t_S$$
+      - Selections Using Indices
+        - A2(primary index, equality on key)
+        $$cost = (h_i+1)*(t_T+t_S)$$
+        - A3(primary index, equality on nonkey)
+        $$cost=h_i*(t_T+t_S)+t_S+t_T*b$$
+        - A4(secondary index, equality on key)
+        $$cost=(h_i+1)*(t_T+t_S)$$
+        - A4(secondary index, equality on nonkey)
+        $$cost=(h_i+n)*(t_T+t_S)$$
+      - Selections Involving Comparisons
+        - A5(primary index, comparison)
+        - A6(secondary index, comparison)
+      - Implementation of Complex Selections
+        - A7(conjunctive selection using one index)
+        - A8(conjunctive selection using composite index)
+        - A9(conjunctive selection by intersection of identifiers)
+        - A10(disjunctive selection by union of identifiers)
