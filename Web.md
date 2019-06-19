@@ -257,7 +257,7 @@ PATCH|Y|Y|N|N|Y
   - Persistent：有持久化标识OID，已经被Session管理
   - Detached：有持久化标识OID，没有被Session管理
   - 执行save()后的持久态对象只是放到Session中管理，同步到数据库要等到事务提交。提交前会比对一级缓存和snapshot，需要时才更新数据库。
-  - ![enter image description here](https://images2018.cnblogs.com/blog/1283465/201711/1283465-20171123210911609-330723443.png)
+  - ![enter image description here](https://images2018.cnblogs.com/blog/1283465/201711/1283465-20171123210911609-330723443.png)![enter image description here](https://img-blog.csdn.net/20180727175236520?watermark/2/text/aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L3NoaV9udV9iaQ==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70)
 - flush Session默认发生在：
   - 一些query执行前
   - org.hibernate.Transaction.commit()
@@ -270,3 +270,70 @@ PATCH|Y|Y|N|N|Y
   5. collecion insertions
   6. entity delete按照Session.delete的顺序
 - 级联持久化
+
+# 12. Spring JPA & IOC
+- JPA(Java Persistence API)
+  - 提供了对象持久化的规范
+  - Hibernate框架是Java环境下ORM的解决方案，提供了JPA的参考实现
+  - Spring Data JPA是一个数据访问的抽象，用于减少数据访问层的代码量
+- Layered Architecture
+  - 接口和实现分离
+  - Entity - 从数据库中自动映射
+  - Repository - 从现有的lib类中拓展
+  - Dao - 自己的访问控制逻辑
+  - Service - 业务逻辑
+  - Controller - 分发请求
+  - IoC/DI - 独立于实现
+- Spring Framework: 是一个提供丰富基础设施的Java平台，可以从POJO构建应用程序，并把企业级服务非入侵地应用到其中。
+- Spring platform 的优势
+  - 无需处理事务API，就可使Java方法在数据库事务中执行
+  - 无需处理远程API，就可使本地Java方法成为远端过程
+  - 无需处理JMX API，就可使本地Java成为管理操作
+  - 无需处理JMS API，就可使本地Java成为消息处理器
+- 核心技术 - IoC container
+  - 一个Spring IoC container管理一个或多个beans
+  - bean的创建使用了应用到这个容器中的配置文件数据
+  - IoC/DI是同一思想下不同维度的表现
+    - IoC强调的是我不需要new，只需告诉容器我需要new，我的对象依赖容器获得
+    - 容器把对象注入给我的过程，就是DI
+- Dependency injection 基于Constructor还是基于Setter
+  - 对于强制参数依赖使用Constructor
+  - 对于可选依赖使用Setter
+  - ![enter image description here](https://images2015.cnblogs.com/blog/950278/201610/950278-20161016002335859-1033469854.png)
+
+# 13. NoSQL & MongoDB
+- 背景
+  - 数据量越来越大，访问速度却有限，如果能能同时访问多个磁盘，就可以提高访问速度
+  - 需要解决硬件的故障问题，因为硬件越多，发生故障概率越大，为避免数据丢失的通用方案是复制
+  - 第二个需要解决的问题如何结合不同磁盘上的数据，做到这一点是出了名的难，MapReduce是一种解决方案
+  - RDBMS的情况
+    - 单表：当一条语句执行时，为保证数据完整性表会被锁掉，性能很差
+    - 水平分表：基于rows,规则如Range,Hash,Key,List and Composite
+    - 垂直分表：基于columns，需要手动实现，但可以显著改善性能
+    - 分区的原因
+      - 磁盘seek速度与tranfer速度相比慢得多
+      - 传统B-Tree的数据模式难以胜任太大的数据频繁更新
+    - 但对于相互关联的表，RDBMS很难分表
+    - 此外，对于半结构化和非结构化的数据，更难以处理
+- NoSQL DBMS
+  - Bigtable：按行按列和时间戳键值索引
+  - Dynamo
+  - Cassandra
+  - MemcacheDB
+  - Apache CouchDB
+  - MongoDB：面向文档的数据库，能自动分发文档，实现数据和负载均衡
+- Sharding
+  - 是MongoDB实现拓展的方法，可以增加更多的机器来处理大量数据
+  - MongoDB支持Autosharding，省去了人工的管理
+  - 通常不需要shard，需要的时候再转换为shard
+  - 以下情况需要shard
+    - 当前机器空间用尽
+    - 想要更快的写速度
+    - 想要再内存中持有更大量的数据以提升性能
+  - Shard Key
+    - 设置切片时需要选择一个key作为依据切分数据
+    - 当增加和取消shard时，MongoDB会重新平衡数据切分
+  - shard切分的结果叫Chunk
+
+# 14. Web 应用架构
+- 
