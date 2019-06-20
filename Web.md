@@ -80,7 +80,14 @@ PATCH|Y|Y|N|N|Y
       - 第二次握手：服务器收到syn包，必须确认客户的SYN(ack=x+1)，同时自己也发送一个SYN包(seq=y)，即SYN+ACK包，此时服务器进入SYN_RECV状态;
       - 第三次握手：客户端收到服务器的SYN+ACK包，向服务器发送确认包ACK(ack=y+1)，此包发送完毕，客户端和服务器进入ESTABLISHED状态，完成三次握手。
     - HTTP是无状态的协议：Server端的HTTPSession存放了相关信息，然后把SessionID作为cookie传回给Client端，之后Client端带着cookie访问Server并识别谁是谁
-    
+- REST 特征
+  - Client-Server隔离对待
+  - 无状态
+  - 可缓存
+  - 分层系统
+  - 统一接口
+  - 支持按需代码
+  
     **Client request**
     ``` 
     GET /index.html HTTP/1.1	
@@ -336,4 +343,37 @@ PATCH|Y|Y|N|N|Y
   - shard切分的结果叫Chunk
 
 # 14. Web 应用架构
-- 
+1. 不同系统不同语言之间的交互 Web service
+2. 不同系统相同语言之间的交互 RPC(远程过程调用)/RMI(远程方法调用)
+3. 单个产品的架构演进
+   1. 分布式架构的演进系统架构演化历程-初始阶段架构![enter image description here](https://dn-coding-net-production-pp.codehub.cn/325d1f22-d7be-4dcd-99c2-14b857482c82.png)
+   2. 系统架构演化历程-应用服务和数据服务分离![enter image description here](https://dn-coding-net-production-pp.codehub.cn/488715d2-8bd5-40d2-9dfe-6cb00e7f10c9.png)
+   3. 系统架构演化历程-使用缓存改善性能![enter image description here](https://dn-coding-net-production-pp.codehub.cn/fc417d16-1ac1-440c-b362-81f33de14b40.png)
+   4. 系统架构演化历程-使用应用服务器集群![enter image description here](https://dn-coding-net-production-pp.codehub.cn/5eff4709-8382-4baf-a8de-488a24d33309.png)
+   5. 系统架构演化历程-数据库读写分离![enter image description here](https://dn-coding-net-production-pp.codehub.cn/d700d575-7de5-4695-97e6-a3b7e96d76c2.png)
+   6. 系统架构演化历程-反向代理和CDN加速![enter image description here](https://dn-coding-net-production-pp.codehub.cn/f18181f6-18fa-4330-8e93-34c871da6e93.png)
+   7. 系统架构演化历程-分布式文件系统和分布式数据库![enter image description here](https://dn-coding-net-production-pp.codehub.cn/e755b03a-c8af-48f1-b33b-c31dff17dad5.png)
+   8. 系统架构演化历程-使用NoSQL和搜索引擎![enter image description here](https://dn-coding-net-production-pp.codehub.cn/9f086aae-3b2a-4001-8399-aedac4c8c420.png)
+   9. 系统架构演化历程-业务拆分![enter image description here](https://dn-coding-net-production-pp.codehub.cn/38a86f11-7fb6-4216-86b0-a92d001fafa0.png)
+   10. 系统架构演化历程-分布式服务![enter image description here](https://dn-coding-net-production-pp.codehub.cn/3916e893-1ae9-456e-af93-3cd85e4d46a7.png)
+4.  产品线的架构 EJB![enter image description here](https://dn-coding-net-production-pp.codehub.cn/a3bdf17c-f6a4-40cd-bb97-a990eab42266.png)
+
+# 15. Browser 中的安全
+- XSS(Cross-site scripting跨站点脚本攻击)是一种web应用中典型的电脑安全漏洞
+- 预防
+  - 防止输入输出的编码转义
+  - 安全验证不信任的HTML输入
+  - 禁用脚本
+  - 新兴技术：Content Security Policy, Javascript sandbox, auto-escaping templates
+- SQL Injection 是一种SQL注入攻击
+- 类型
+  - 不正确过滤转义字符
+  - 不正确的类型处理
+  - SQL盲注
+  - 条件响应
+- 缓解方案：
+  - 使用参数化的Statement
+  - 处理所有特殊意义的字符
+  - 类型检查
+  - 数据库权限
+- 通过设置多个子域名绕过Web Storage限制，实现无限量存储
