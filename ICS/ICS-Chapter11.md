@@ -1,5 +1,5 @@
 # 第11章 网络编程
-> C/S 编程模式(Client/Server)
+> ### C/S 编程模式(Client/Server)
   - 基本操作：Transaction（事务）
   - 基本流程：
     1. Client发起Transaction，发送request
@@ -7,7 +7,7 @@
     3. Server发送response给Client，等待下一个request
     4. Client收到response并处理
   - Client&Server是进程，而不是machine或host
-> Network
+> ### Network
   - LAN(Local Area Network)：局域网，其中最流行的是Ethernet(以太网)
     - Ethernet segment(以太网段)：包括wires(双绞线)和hub(集线器)，hub完全同步所有端口
     - Ethernet adapter(以太网适配器)：全球唯一48bit地址
@@ -23,7 +23,7 @@
     6. Router's LAN2 adapter把frame复制到network
     7. HostB's adapter读取frame并传给protocol software
     8. HostB's protocol software剥落PH和FH2，最后把数据通过system call复制到virtual address
-> The Global IP Internet
+> ### The Global IP Internet
   - IP地址
     - 地址结构(历史遗留问题)
     ```
@@ -72,7 +72,7 @@
         1. Web服务器 port：80 知名服务名：http
         2. 电子邮件服务器 port：25 知名服务名：smtp
     - socket pair：(cliaddr:cliport, servaddr:servport)
-> Socket Interface
+> ### Socket Interface
   - 地址结构：
     ```
     //历史遗留问题，本可以是一个标量类型
@@ -198,5 +198,57 @@
     int open_listenfd(char *port);
     ```
 
-> Web Servers
-  - 
+> ### Web Servers
+- Web Basics
+  - HTTP: 与FTP相比可以使用HTML的语言编写，并且可以包含任何host上的指针(超链接)
+  - MIME(Multipurpose Internet Mail Extensions,多用途的网际邮件扩充协议)
+    MIME类型|描述
+    -|-
+    text/html|HTML页面
+    text/plain|无格式文本
+    application/postscript|Postscript文档
+    image/gif|GIF格式编码的二进制图像
+    image/png|PNG格式编码的二进制图像
+    image/jpeg|JPEG格式编码的二进制图像
+  - Web服务器返回static content/dynamic content，这些内容都与一个URL标识的文件相关联
+- HTTP Transactions
+  - HTTP Request: request line + request headers + 空文本行
+    ```
+    GET /index.html?2333 HTTP/1.1
+    Host: www.baidu.com
+    \r\n
+    ```
+  - HTTP Response: response line + response headers + 空文本行 + response body
+    ```
+    HTTP/1.0 200 OK
+    MIME-Version: 1.0
+    Date: Mon, 8 Jan 2010 44:59:42 GMT
+    Server: Apache-Coyote/1.1
+    Content-Type: text/html
+    Content-Length: 42092
+    \r\n
+    <html>...
+    </html>
+    ```
+    Status code|Status message|描述
+    :-:|:-:|-
+    200|OK|处理请求无误
+    403|Forbidden|服务器无权访问所请求的文件
+    404|Not found|服务器不能找到所请求的文件
+    501|Not implemented|服务器不支持请求的方法
+- Serving Dynamic Content
+  - CGI(Common Gateway Interface, 通用网关接口): 解决了客户端-服务器-子进程间的参数传递和通信问题。
+  - Client to Server Argument: 在request URI中?传递，POST在request body中传递
+  - Server to Child Argument: fork->CGI环境变量QUERY_STRING="arg1&arg2..."->execve(/cgi-bin/adder)
+  - Server to Child otherInfo: 通过下列环境变量
+    环境变量|描述
+    -|-
+    QUERY_STRING|程序参数
+    SERVER_PORT|服务端口
+    REQUEST_METHOD|请求方法
+    REMOTE_HOST|客户端域名
+    REMOTE_ADDR|客户端点分十进制IP地址
+    CONTENT_TYPE|POST only：请求体的MIME类型
+    CONTENT_LENGTH|POST only：请求体的字节大小
+  - 子进程输出：CGI调用前使用dup2将标准输出重定向到clientfd
+
