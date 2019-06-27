@@ -127,3 +127,32 @@
     //删除从start开始的length字节组成的区域
     int munmap(void *start, size_t length);
     ```
+> ### Replacement
+- FIFO
+- Random
+- LRU->Clock Algorithm
+- LFU
+- AMAT(Average memory access time)
+- $$AMAT = P_{Hit}T_M + P_{Miss}T_D$$
+
+> ### Lock
+- Pthread Lock-> mutex
+  - lock/unlock
+  - trylock/timedlock
+- Controlling Interrupts
+- Test-And-Set: 解决的是原子性的问题
+- Compare-And-Swap: 解决的是硬件提供的原子操作
+- Load-Linked and Store-Conditional: 解决的是并发的问题
+- Fetch-and-Add Ticket Lock-> queue: 解决的是公平性的问题
+- yield->park/unpark: 解决的是效率的问题
+- Futex lock
+- two-phase lock
+
+> ### Schedule
+- FIFO
+- SJF(Shortest Job First)
+- STCF(Shortest Time-to-Completion First)
+- RR(Round Rabin)
+- MLFQ(Multi-Level Feedback Queue Scheduler)
+- Turnaround time
+- Response time
