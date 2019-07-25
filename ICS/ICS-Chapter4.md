@@ -82,7 +82,198 @@
     `bool need_regids = icode in { IRRMOVQ, IOPQ, IPUSHQ, IPOPQ, IIRMOVQ, IRMMOVQ, IMRMOVQ };`
     `bool need_valC = icode in { IIRMOVQ, IRMMOVQ, IMRMOVQ, IJXX, ICALL}`
   - Decode and Write-Back Stages
+    ```
+    word srcA = [
+        icode in { IRRMOVQ, IRMMOVQ, IOPQ, IPUSHQ } : rA;
+        icode in { IPOPQ, IRET } : RRSP;
+        1 : RNONE;
+    ];
+    ```
+    ```
+    word srcB = [
+        icode in { IOPQ, IRMMOVQ, IMRMOVQ } : rB;
+        icode in { IPUSHQ, IPOPQ, ICALL, IRET } : RRSP;
+        1 : RNONE;
+    ];
+    ```
+    ```
+    word dstE = [
+        icode in { IRRMOVQ } : rB;
+        icode in { IIRMOVQ, IOPQ } : rB;
+        icode in { IPUSHQ, IPOPQ, ICALL, IRET } : RRSP;
+        1 : RNONE;
+    ];
+    ```
+    ```
+    word dstM = [
+        icode in { IMRMOVQ, IPOPQ } : rA;
+        1 : RNONE;
+    ]
+    ```
+  - Execute Stage
+    ```
+    word aluA = [
+        icode in { IRRMOVQ, IOPQ } : valA;
+        icode in { IIRMOVQ, IRMMOVQ, IMRMOVQ } : valC;
+        icode in { ICALL, IPUSHQ } : -8;
+        icode in { IRET, IPOPQ } : 8;
+    ];
+    ```
+    ```
+    word aluB = [
+        icode in { IRMMOVQ, IMRMOVQ, IOPQ, ICALL, IPUSHQ, IRET, IPOPQ } : valB;
+        icode in { IRRMOVQ, IIRMOVQ } : 0;
+    ];
+    ```
+    ```
+    word alufun = [
+        icode == IOPQ : ifun;
+        1 : ALUADD;
+    ];
+    ```
+    `bool set_cc = icode in { IOPQ };`
+  - Memory Stage
+    ```
+    word mem_addr = [
+        icode in { IRMMOVQ, IPUSHQ, ICALL, IMRMOVQ } : valE;
+        icode in { IPOPQ, IRET } : valA;
+    ];
+    ```
+    ```
+    word mem_data = [
+        icode in { IRMMOVQ, IPUSHQ } : valA;
+        icode == ICALL ：valP;
+    ]
+    ```
+    `bool mem_read = icode in { IMRMOVQ, IPOPQ, IRET };`
+    `bool mem_write = icode in { IRMMOVQ, IPUSHQ, ICALL };`
+    ```
+    word Stst = [
+        imem_error || dmem_error : SADR;
+        !instr_valid : SINS;
+        icode == IHALT : SHLT;
+        1 : SAOK;
+    ];
+  - PC Update Stage
+    ```
+    word new_pc = [
+        icode == ICALL : valC;
+        icode == IJXX && Cnd : valC;
+        icode == IRET : valM;
+        1 : valP;
+    ];
+    ```
+> ### Pipeline
+- Throughput: 每秒执行指令数，单位GIPS(每秒千兆条指令)
+- latency: 从头到尾执行一条指令所需要的时间
+- Limitations:
+  1. Nonuniform Partitioning 不一致的划分
+  2. Diminishing Returns of Deep Pipelining 流水线过深，收益反而下降
+- Feedback:
+  - data dependency
+  - control dependency
+> ### Pipelined Y86-64 Implementations
+- SEQ+ 移动PC Update，合并时钟
+- PIPE- 增加5个pipeline registers
+- FDEMW前缀是流水线寄存器，fdemw前缀是流水线阶段
+- Next PC Prediction: 从valP和valC选择出predPC, jXX预测taken，ret不预测
+- Hazard
+  - data hazard
+  - control hazard
+  - load/use hazard
+- Avoiding
+  - Stalling
+  - Forwarding
+- Exception Handling
+  - 多个异常发生时应该报告流水线中最深的异常
+  - 分支预测错误导致的异常应该能够取消
+  - 出现异常后的指令不应该修改系统的部分状态
+- PIPE
+  - PC Selection and Fetch Stage
+    ```
+    word f_pc = [
+        M_icode == IJXX && !M_Cnd : M_valA;
+        W_icode == IRET : W_valM;
+        1 : F_predPC;
+    ];
+    ```
+    ```
+    word f_predPC = [
+        f_icode in { IJXX, ICALL } : f_valC;
+        1 : f_valP;
+    ]
+    ```
+    ```
+    word f_stat = [
+        imem_error : SADR;
+        !instr_valid : SINS;
+        f_icode == IHALT : SHLT;
+        1 : SAOK;
+    ]
+    ```
+  - Decode and Write-Back Stage
+    ```
+    word d_dstE = [
+        D_icode in { IRRMOVQ, IIRMOVQ, IOPQ } : D_rB;
+        D_icode in { IPUSHQ, IPOPQ, ICALL, IRET } : RRSP;
+        1 : RNONE;
+    ]
+    ```
+    ```
+    word d_valA = [
+        D_icode in { ICALL, IJXX } : D_valP;
+        d_srcA == e_dstE : e_valE;
+        d_srcA == M_dstM : m_valM;
+        d_srcA == M_dstE : M_valE;
+        d_srcA == W_dstM : W_valM;
+        d_srcA == W_dstE : W_valE;
+        1 : d_rvalA;
+    ]
+    ```
+    ```
+    word d_valB = [
+        d_srcB == e_dstE : e_valE;
+        d_srcB == M_dstM : m_valM;
+        d_srcB == M_dstE : M_valE;
+        d_srcB == W_dstM : W_valM;
+        d_srcB == W_dstE : W_valE;
+        1 : d_rvalB;
+    ];
+    ```
+    ```
+    word Stat = [
+        W_stat == SBUB : SAOK;
+        1 : W_stat;
+    ]
+    ```
   - Execute Stage
   - Memory Stage
-  - PC Update Stage
-> ### Pipeline
+    ```
+    word m_stat = [
+        dmem_error : SADR;
+        1 : M_stat;
+    ]
+    ```
+- Pipeline Control Logic
+  - Load/use harzard, 从内存读取和使用该值的指令之间必须暂停 1 cycle
+    - E_icode in {IMRMOVQ, IPOPQ} && E_dstM in {d_srcA, d_srcB}
+  - Processing ret，必须stall直到ret到达write-back阶段
+    - IRET in {D_icode, E_icode, M_icode}
+  - Mispredicted branche，必须取消这些指令，从新的指令开始
+    - E_icode == IJXX && !e_Cnd
+  - Exception，禁止后面的指令更新状态，并在异常指令到达write-back时停止执行
+    - m_stat in {SADR, SINS, SHLT} || W_stat in {SADR, SINS, SHLT}
+  
+  Condition|F|D|E|M|W
+  -|:-:|:-:|:-:|:-:|:-:
+  Precessing ret|stall|bubble|normal|normal|normal
+  Load/use hazard|stall|stall|bubble|normal|normal
+  Mispredicted branch|normal|bubble|bubble|normal|normal
+详见P460-462
+  `bool F_stall = E_icode in { IMRMOVQ, IPOPQ } &&
+  E_dstM in { d_srcA, d_srcB } ||
+  IRET in { D_icode, E_icode, M_icode };`
+  其他代码详见P493-494
+
+- 性能分析
+  - CPI(Cycles Per Instruction) = 1 + lp + mp + rp
